@@ -21,7 +21,7 @@ export const Header: React.FC = () => {
 
       <div className="flex items-center space-x-4">
         {user && (
-          <span className="text-cyber-cyan">Welcome, {user.name}</span>
+          <span className="text-cyber-cyan">Welcome, {user.username}</span>
         )}
         <Button variant="neon" onClick={logout}>
           Logout

@@ -85,7 +85,9 @@ export const ContextDrawer: React.FC<ContextDrawerProps> = ({
                             {lecture.title}
                           </CardTitle>
                           <p className="text-xs text-cyber-blue">
-                            {new Date(lecture.created_at).toLocaleDateString()}
+                            {lecture.created_at
+                              ? new Date(lecture.created_at).toLocaleDateString()
+                              : 'Date unavailable'}
                           </p>
                         </div>
                       </div>
