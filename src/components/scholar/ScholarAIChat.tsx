@@ -2,8 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Brain, BookOpen, GraduationCap } from 'lucide-react';
-import Spline from '@splinetool/react-spline';
+import { Send, Brain } from 'lucide-react';
+// import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,8 +12,10 @@ import { useChat } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
 import { ChatMessage } from '@/types';
 import { FloatingIcons } from './FloatingIcons';
-import { NeonCard } from './NeonCard';
+import { FloatingOrbs } from './FloatingOrbs';
 import { TerminalText } from './TerminalText';
+
+// const Spline = dynamic(() => import('@splinetool/react-spline'), { ssr: false });
 
 interface ScholarAIChatProps {
   selectedLectureId?: string;
@@ -47,28 +49,19 @@ export const ScholarAIChat: React.FC<ScholarAIChatProps> = ({ selectedLectureId 
   };
 
   return (
-    <div className="relative min-h-screen bg-cyber-black scanlines">
+    <div className="relative min-h-screen bg-void-black scanlines">
       <FloatingIcons />
 
-      {/* Spline Background */}
-      <div className="absolute inset-0 z-0">
+      {/* Spline Brain in top-right - Temporarily disabled for build */}
+      {/* <div className="absolute top-6 right-6 w-64 h-64 z-20">
         <Spline scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode" />
-      </div>
+      </div> */}
+
+      {/* Floating Orbs FAB */}
+      <FloatingOrbs />
 
       {/* Main Chat Interface */}
-      <div className="relative z-10 flex flex-col h-screen">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-cyber-cyan/20">
-          <div className="flex items-center space-x-3">
-            <Brain className="w-8 h-8 text-cyber-cyan glow" />
-            <h1 className="text-2xl font-bold text-cyber-cyan">Scholar's AI</h1>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-cyber-cyan rounded-full animate-pulse"></div>
-              <span className="text-sm text-cyber-cyan">System Online</span>
-            </div>
-          </div>
-        </div>
-
+      <div className="relative z-10 flex flex-col h-screen pt-20">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           <AnimatePresence>
@@ -80,26 +73,25 @@ export const ScholarAIChat: React.FC<ScholarAIChatProps> = ({ selectedLectureId 
                 exit={{ opacity: 0, y: -20 }}
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <NeonCard className={`max-w-[70%] ${message.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
-                  <CardContent className="p-4">
-                    {message.role === 'assistant' ? (
-                      <TerminalText text={message.content} />
-                    ) : (
-                      <p className="text-cyber-cyan">{message.content}</p>
-                    )}
+                {message.role === 'user' ? (
+                  <div className="max-w-[70%] glass rounded-lg border border-neon-cyan p-4">
+                    <p className="text-neon-cyan">{message.content}</p>
+                  </div>
+                ) : (
+                  <div className="max-w-[70%] bg-transparent border-l-4 border-neon-cyan p-4 rounded-r-lg">
+                    <TerminalText text={message.content} />
                     {message.citations && message.citations.length > 0 && (
                       <div className="mt-3 space-y-2">
-                        <p className="text-xs text-cyber-blue font-semibold">Sources:</p>
+                        <p className="text-xs text-electric-blue font-semibold">Sources:</p>
                         {message.citations.map((citation) => (
-                          <Badge key={citation.id} variant="dataChip" className="mr-2 mb-2">
-                            <BookOpen className="w-3 h-3 mr-1" />
+                          <Badge key={citation.id} className="mr-2 mb-2 bg-electric-blue/20 text-electric-blue border-electric-blue">
                             {citation.title}
                           </Badge>
                         ))}
                       </div>
                     )}
-                  </CardContent>
-                </NeonCard>
+                  </div>
+                )}
               </motion.div>
             ))}
           </AnimatePresence>
@@ -110,37 +102,36 @@ export const ScholarAIChat: React.FC<ScholarAIChatProps> = ({ selectedLectureId 
               animate={{ opacity: 1 }}
               className="flex justify-start"
             >
-              <NeonCard className="max-w-[70%]">
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-2">
-                    <Brain className="w-4 h-4 text-cyber-cyan animate-pulse" />
-                    <span className="text-cyber-cyan">Processing neural pathways...</span>
-                  </div>
-                </CardContent>
-              </NeonCard>
+              <div className="max-w-[70%] bg-transparent border-l-4 border-neon-cyan p-4 rounded-r-lg">
+                <div className="flex items-center space-x-2">
+                  <Brain className="w-4 h-4 text-neon-cyan animate-pulse" />
+                  <span className="text-neon-cyan">Processing neural pathways...</span>
+                </div>
+                {/* Scanning laser line */}
+                <div className="mt-2 h-1 bg-gradient-to-r from-transparent via-neon-cyan to-transparent animate-scan"></div>
+              </div>
             </motion.div>
           )}
 
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="p-6 border-t border-cyber-cyan/20">
-          <div className="flex space-x-3">
+        {/* Input Bar - Terminal Style */}
+        <div className="p-6 border-t border-neon-cyan/20 bg-void-black/50 backdrop-blur-sm">
+          <div className="flex items-center space-x-3 bg-void-black border border-neon-cyan/50 rounded-lg p-3">
+            <span className="text-neon-cyan">$</span>
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Query the Neural Net..."
-              className="flex-1"
+              className="flex-1 bg-transparent border-none text-neon-cyan placeholder-neon-cyan/50 focus:ring-0"
               disabled={loading}
             />
             <Button
               onClick={handleSend}
               disabled={loading || !input.trim()}
-              variant="neon"
-              size="icon"
-              className="shrink-0"
+              className="bg-neon-cyan hover:bg-neon-cyan/80 text-void-black rounded-full p-2"
             >
               <Send className="w-4 h-4" />
             </Button>

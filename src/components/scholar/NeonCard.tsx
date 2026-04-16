@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardProps } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-interface NeonCardProps extends CardProps {
+interface NeonCardProps extends React.HTMLAttributes<HTMLDivElement> {
   glowColor?: string;
 }
 
@@ -23,7 +23,7 @@ export const NeonCard: React.FC<NeonCardProps> = ({
     >
       <Card
         className={cn(
-          'holographic data-stream transition-all duration-300 hover:shadow-lg',
+          'glass holographic border border-neon-cyan/50 hover:border-neon-cyan transition-all duration-300',
           className
         )}
         style={{

@@ -32,7 +32,7 @@ export const TerminalText: React.FC<TerminalTextProps> = ({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className={`font-mono text-cyber-cyan ${className}`}
+      className={`font-mono text-neon-cyan ${className}`}
     >
       {displayedText}
       {currentIndex < text.length && (

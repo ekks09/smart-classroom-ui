@@ -4,14 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Brain, Database, Cpu, Upload } from 'lucide-react';
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api';
 import { HealthStatus } from '@/types';
-import { Header } from '@/components/layout/Header';
 import { FloatingIcons } from '@/components/scholar/FloatingIcons';
-import { ScanlineOverlay } from '@/components/scholar/ScanlineOverlay';
 
 export default function DashboardPage() {
   const { token, isAuthenticated } = useAuth();
@@ -48,31 +46,40 @@ export default function DashboardPage() {
       title: 'Neural Capacity',
       value: '1.2 TB',
       icon: Database,
-      color: 'text-cyber-cyan',
-      description: 'Indexed Knowledge',
+      color: 'text-neon-cyan',
+      description: 'Indexed Lectures',
     },
     {
       title: 'Vector Integrity',
       value: health?.vector_db ? 'Optimal' : 'Degraded',
       icon: Brain,
-      color: health?.vector_db ? 'text-cyber-cyan' : 'text-cyber-purple',
-      description: 'Database Status',
+      color: health?.vector_db ? 'text-neon-cyan' : 'text-warning-purple',
+      description: 'Vector DB Status',
     },
     {
       title: 'Compute Load',
       value: health?.llm_ready ? 'Active' : 'Standby',
       icon: Cpu,
-      color: health?.llm_ready ? 'text-cyber-cyan' : 'text-cyber-purple',
+      color: health?.llm_ready ? 'text-neon-cyan' : 'text-warning-purple',
       description: 'LLM Status',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-cyber-black relative">
-      <ScanlineOverlay />
+    <div className="min-h-screen bg-void-black relative scanlines">
       <FloatingIcons />
 
-      <Header />
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-neon-cyan/20">
+        <div className="flex items-center space-x-3">
+          <Brain className="w-8 h-8 text-neon-cyan glow" />
+          <h1 className="text-2xl font-bold text-neon-cyan">Scholar's AI</h1>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-neon-cyan rounded-full animate-pulse"></div>
+            <span className="text-sm text-neon-cyan">System Online</span>
+          </div>
+        </div>
+      </div>
 
       <div className="relative z-10 p-6">
         <motion.div
@@ -80,7 +87,7 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-3xl font-bold text-cyber-cyan mb-8">Mission Control</h2>
+          <h2 className="text-3xl font-bold text-neon-cyan mb-8">Mission Control</h2>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -91,17 +98,17 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="holographic">
+                <Card className="glass holographic">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <CardTitle className="text-lg text-cyber-cyan mb-2">
+                        <h3 className="text-lg text-neon-cyan mb-2">
                           {stat.title}
-                        </CardTitle>
+                        </h3>
                         <p className={`text-2xl font-bold ${stat.color} mb-1`}>
                           {stat.value}
                         </p>
-                        <p className="text-sm text-cyber-blue">
+                        <p className="text-sm text-electric-blue">
                           {stat.description}
                         </p>
                       </div>
@@ -120,16 +127,16 @@ export default function DashboardPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <Card className="holographic cursor-pointer hover:scale-105 transition-transform">
+              <Card className="glass holographic cursor-pointer hover:scale-105 transition-transform">
                 <CardContent className="p-8 text-center">
-                  <Upload className="w-16 h-16 text-cyber-cyan mx-auto mb-4 glow" />
-                  <CardTitle className="text-xl text-cyber-cyan mb-2">
+                  <Upload className="w-16 h-16 text-neon-cyan mx-auto mb-4 glow" />
+                  <h3 className="text-xl text-neon-cyan mb-2">
                     Upload Knowledge
-                  </CardTitle>
-                  <p className="text-cyber-blue mb-4">
+                  </h3>
+                  <p className="text-electric-blue mb-4">
                     Add new lectures and documents to the neural network
                   </p>
-                  <Button variant="neon" size="lg">
+                  <Button className="hex bg-void-black border border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-void-black px-8 py-3">
                     Start Upload
                   </Button>
                 </CardContent>
@@ -142,16 +149,16 @@ export default function DashboardPage() {
               transition={{ delay: 0.5 }}
               onClick={() => router.push('/chat')}
             >
-              <Card className="holographic cursor-pointer hover:scale-105 transition-transform">
+              <Card className="glass holographic cursor-pointer hover:scale-105 transition-transform">
                 <CardContent className="p-8 text-center">
-                  <Brain className="w-16 h-16 text-cyber-cyan mx-auto mb-4 glow" />
-                  <CardTitle className="text-xl text-cyber-cyan mb-2">
+                  <Brain className="w-16 h-16 text-neon-cyan mx-auto mb-4 glow" />
+                  <h3 className="text-xl text-neon-cyan mb-2">
                     Start Session
-                  </CardTitle>
-                  <p className="text-cyber-blue mb-4">
+                  </h3>
+                  <p className="text-electric-blue mb-4">
                     Begin an interactive learning session with the AI
                   </p>
-                  <Button variant="neon" size="lg">
+                  <Button className="hex bg-void-black border border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-void-black px-8 py-3">
                     Enter Neural Net
                   </Button>
                 </CardContent>
