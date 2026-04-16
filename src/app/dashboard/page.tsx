@@ -43,25 +43,25 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      title: 'Neural Capacity',
-      value: '1.2 TB',
-      icon: Database,
-      color: 'text-neon-cyan',
-      description: 'Indexed Lectures',
-    },
-    {
       title: 'Vector Integrity',
-      value: health?.vector_db ? 'Optimal' : 'Degraded',
-      icon: Brain,
-      color: health?.vector_db ? 'text-neon-cyan' : 'text-warning-purple',
-      description: 'Vector DB Status',
+      value: health?.vector_db?.connected ? 'Connected' : 'Disconnected',
+      icon: Database,
+      color: health?.vector_db?.connected ? 'text-neon-cyan' : 'text-warning-purple',
+      description: 'Supabase Vector DB',
     },
     {
-      title: 'Compute Load',
-      value: health?.llm_ready ? 'Active' : 'Standby',
-      icon: Cpu,
+      title: 'LLM Status',
+      value: health?.llm_ready ? 'Ready' : 'Loading',
+      icon: Brain,
       color: health?.llm_ready ? 'text-neon-cyan' : 'text-warning-purple',
-      description: 'LLM Status',
+      description: 'Qwen 2.5-3B',
+    },
+    {
+      title: 'Speech Engine',
+      value: health?.stt_ready ? 'Active' : 'Standby',
+      icon: Cpu,
+      color: health?.stt_ready ? 'text-neon-cyan' : 'text-warning-purple',
+      description: 'Faster Whisper',
     },
   ];
 

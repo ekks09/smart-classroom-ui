@@ -13,10 +13,12 @@ import { TerminalText } from '@/components/scholar/TerminalText';
 import { FloatingIcons } from '@/components/scholar/FloatingIcons';
 
 export default function LivePage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const router = useRouter();
-  const { isRecording, transcript, startRecording, stopRecording } = useAudioStream(useAuth().token);
+  const { isRecording, transcript, startRecording, stopRecording, isConnected, liveSession } = useAudioStream(useAuth().token);
   const [fullTranscript, setFullTranscript] = useState('');
+  const [sessionTitle, setSessionTitle] = useState('Live Lecture');
+  const [course, setCourse] = useState('General');
 
   React.useEffect(() => {
     if (!isAuthenticated) {
@@ -29,6 +31,16 @@ export default function LivePage() {
       setFullTranscript(prev => prev + ' ' + transcript);
     }
   }, [transcript]);
+
+  const handleStartRecording = async () => {
+    try {
+      await startRecording(sessionTitle, course);
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+    }
+  };
+
+  const canStream = user?.role === 'teacher' || user?.role === 'admin';
 
   if (!isAuthenticated) {
     return null;
@@ -70,24 +82,55 @@ export default function LivePage() {
 
                   <AudioVisualizer isActive={isRecording} />
 
-                  <div className="mt-6">
-                    <Button
-                      className={`w-full ${isRecording ? 'bg-warning-purple hover:bg-warning-purple/80' : 'bg-neon-cyan hover:bg-neon-cyan/80'} text-void-black`}
-                      size="lg"
-                      onClick={isRecording ? stopRecording : startRecording}
-                    >
-                      {isRecording ? (
-                        <>
-                          <MicOff className="w-5 h-5 mr-2" />
-                          Stop Recording
-                        </>
-                      ) : (
-                        <>
-                          <Mic className="w-5 h-5 mr-2" />
-                          Start Recording
-                        </>
-                      )}
-                    </Button>
+                  <div className="mt-6 space-y-4">
+                    {!canStream && (
+                      <p className="text-warning-purple text-sm">Teacher access required for streaming</p>
+                    )}
+
+                    {canStream && (
+                      <>
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            placeholder="Session title"
+                            value={sessionTitle}
+                            onChange={(e) => setSessionTitle(e.target.value)}
+                            className="w-full bg-transparent border border-neon-cyan/50 rounded px-3 py-2 text-neon-cyan placeholder-neon-cyan/50"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Course"
+                            value={course}
+                            onChange={(e) => setCourse(e.target.value)}
+                            className="w-full bg-transparent border border-neon-cyan/50 rounded px-3 py-2 text-neon-cyan placeholder-neon-cyan/50"
+                          />
+                        </div>
+
+                        <Button
+                          className={`w-full ${isRecording ? 'bg-warning-purple hover:bg-warning-purple/80' : 'bg-neon-cyan hover:bg-neon-cyan/80'} text-void-black`}
+                          size="lg"
+                          onClick={isRecording ? stopRecording : handleStartRecording}
+                          disabled={!isConnected}
+                        >
+                          {isRecording ? (
+                            <>
+                              <MicOff className="w-5 h-5 mr-2" />
+                              Stop Streaming
+                            </>
+                          ) : (
+                            <>
+                              <Mic className="w-5 h-5 mr-2" />
+                              Start Live Stream
+                            </>
+                          )}
+                        </Button>
+                      </>
+                    )}
+
+                    <div className="flex items-center justify-center space-x-2 mt-4">
+                      <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-neon-cyan' : 'bg-warning-purple'}`}></div>
+                      <span className="text-sm text-neon-cyan">{isConnected ? 'Connected' : 'Disconnected'}</span>
+                    </div>
                   </div>
 
                   <p className="text-sm text-electric-blue mt-4">

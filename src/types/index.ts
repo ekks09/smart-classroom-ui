@@ -1,29 +1,30 @@
 export interface User {
   id: string;
-  email: string;
-  name: string;
+  username: string;
+  email?: string;
+  role: 'teacher' | 'student' | 'admin';
 }
 
 export interface Lecture {
   id: string;
   title: string;
-  content: string;
-  created_at: string;
+  course?: string;
+  chunk_count?: number;
+  created_at?: string;
 }
 
 export interface ChatMessage {
   id: string;
   content: string;
   role: 'user' | 'assistant';
-  citations?: Citation[];
+  sources?: Source[];
   timestamp: string;
 }
 
-export interface Citation {
-  id: string;
-  title: string;
-  content: string;
-  page?: number;
+export interface Source {
+  lecture_title: string;
+  chunk_idx: number;
+  content?: string;
 }
 
 export interface AuthResponse {
@@ -33,7 +34,10 @@ export interface AuthResponse {
 
 export interface HealthStatus {
   llm_ready: boolean;
-  vector_db: boolean;
+  vector_db: {
+    connected: boolean;
+  };
+  stt_ready: boolean;
 }
 
 export interface AskRequest {
@@ -44,5 +48,18 @@ export interface AskRequest {
 
 export interface AskResponse {
   answer: string;
-  citations?: Citation[];
+  sources?: Source[];
+}
+
+export interface UploadLectureRequest {
+  title: string;
+  course?: string;
+  content: string;
+}
+
+export interface LiveSession {
+  session_id: string;
+  title: string;
+  course: string;
+  started_by: string;
 }

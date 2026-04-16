@@ -13,7 +13,7 @@ import { api } from '@/lib/api';
 // const Spline = dynamic(() => import('@splinetool/react-spline'), { ssr: false });
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -26,11 +26,10 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await api.login(email, password);
-      login(response.token, response.user);
+      await login(username, password);
       router.push('/dashboard');
-    } catch (err) {
-      setError('Login failed. Please check your credentials.');
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -65,10 +64,10 @@ export default function LoginPage() {
               <form onSubmit={handleLogin} className="space-y-6">
                 <div>
                   <Input
-                    type="email"
-                    placeholder="Neural ID"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     required
                     className="w-full bg-transparent border-0 border-b-2 border-neon-cyan text-neon-cyan placeholder-neon-cyan/50 focus:ring-0 focus:border-neon-cyan"
                   />

@@ -80,12 +80,12 @@ export const ScholarAIChat: React.FC<ScholarAIChatProps> = ({ selectedLectureId 
                 ) : (
                   <div className="max-w-[70%] bg-transparent border-l-4 border-neon-cyan p-4 rounded-r-lg">
                     <TerminalText text={message.content} />
-                    {message.citations && message.citations.length > 0 && (
+                    {message.sources && message.sources.length > 0 && (
                       <div className="mt-3 space-y-2">
                         <p className="text-xs text-electric-blue font-semibold">Sources:</p>
-                        {message.citations.map((citation) => (
-                          <Badge key={citation.id} className="mr-2 mb-2 bg-electric-blue/20 text-electric-blue border-electric-blue">
-                            {citation.title}
+                        {message.sources.map((source, index) => (
+                          <Badge key={index} className="mr-2 mb-2 bg-electric-blue/20 text-electric-blue border-electric-blue">
+                            {source.lecture_title} • chunk {source.chunk_idx}
                           </Badge>
                         ))}
                       </div>

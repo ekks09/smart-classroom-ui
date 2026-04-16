@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ChatMessage, AskRequest } from '@/types';
+import { ChatMessage, AskRequest, Source } from '@/types';
 import { api } from '@/lib/api';
 
 export const useChat = (token: string | null) => {
@@ -32,7 +32,7 @@ export const useChat = (token: string | null) => {
         id: (Date.now() + 1).toString(),
         content: response.answer,
         role: 'assistant',
-        citations: response.citations,
+        sources: response.sources,
         timestamp: new Date().toISOString(),
       };
 

@@ -1,63 +1,227 @@
-import { AuthResponse, Lecture, HealthStatus, AskRequest, AskResponse } from '@/types';
+import { AuthResponse, Lecture, HealthStatus, AskRequest, AskResponse, UploadLectureRequest, User } from '@/types';
+import { config } from './config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || config.api.baseUrl;
 
+/**
+ * Enhanced API error handler
+ */
+class APIError extends Error {
+  constructor(
+    message: string,
+    public status?: number,
+    public details?: any
+  ) {
+    super(message);
+    this.name = 'APIError';
+  }
+}
+
+/**
+ * Helper to parse error responses from backend
+ */
+const parseError = async (response: Response): Promise<string> => {
+  try {
+    const data = await response.json();
+    return data.detail || data.message || `Error ${response.status}`;
+  } catch {
+    return `Error ${response.status}: ${response.statusText}`;
+  }
+};
+
+/**
+ * Main API client with integrated error handling and retry logic
+ */
 export const api = {
-  async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await fetch(`${API_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
+  async login(username: string, password: string): Promise<AuthResponse> {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Login failed');
+      if (!response.ok) {
+        const error = await parseError(response);
+        throw new APIError(error, response.status);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Login failed: Unable to connect to backend');
     }
+  },
 
-    return response.json();
+  async register(username: string, password: string, email?: string, role: string = 'teacher'): Promise<AuthResponse> {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password, email, role }),
+      });
+
+      if (!response.ok) {
+        const error = await parseError(response);
+        throw new APIError(error, response.status);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Registration failed: Unable to connect to backend');
+    }
+  },
+
+  async getCurrentUser(token: string): Promise<User> {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new APIError('Token expired or invalid', 401);
+        }
+        const error = await parseError(response);
+        throw new APIError(error, response.status);
+      }
+
+      const data = await response.json();
+      return data.user || data;
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Failed to get user info');
+    }
   },
 
   async getLectures(token: string): Promise<Lecture[]> {
-    const response = await fetch(`${API_URL}/api/lectures`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    try {
+      const response = await fetch(`${API_URL}/api/lectures`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch lectures');
+      if (!response.ok) {
+        const error = await parseError(response);
+        throw new APIError(error, response.status);
+      }
+
+      const data = await response.json();
+      return (data.lectures || data) as Lecture[];
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Failed to fetch lectures');
     }
+  },
 
-    const data = await response.json();
-    return data.lectures;
+  async uploadLecture(token: string, request: UploadLectureRequest): Promise<Lecture> {
+    try {
+      const response = await fetch(`${API_URL}/api/lectures/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+
+      if (!response.ok) {
+        const error = await parseError(response);
+        throw new APIError(error, response.status);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Failed to upload lecture');
+    }
+  },
+
+  async uploadLectureFile(token: string, file: File, title: string, course: string = 'General'): Promise<Lecture> {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', title);
+      formData.append('course', course);
+
+      const response = await fetch(`${API_URL}/api/lectures/upload-file`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await parseError(response);
+        throw new APIError(error, response.status);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Failed to upload file');
+    }
   },
 
   async askQuestion(token: string, request: AskRequest): Promise<AskResponse> {
-    const response = await fetch(`${API_URL}/api/assistant/ask`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
+    try {
+      const response = await fetch(`${API_URL}/api/assistant/ask`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to get answer');
+      if (!response.ok) {
+        const error = await parseError(response);
+        throw new APIError(error, response.status);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Failed to get response from AI assistant');
     }
-
-    return response.json();
   },
 
   async getHealth(): Promise<HealthStatus> {
-    const response = await fetch(`${API_URL}/api/health`);
+    try {
+      const response = await fetch(`${API_URL}/api/health`, {
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error('Health check failed');
+      if (!response.ok) {
+        throw new APIError('Health check failed', response.status);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      // Return default offline status instead of throwing
+      return {
+        llm_ready: false,
+        vector_db: { connected: false },
+        stt_ready: false,
+      };
     }
-
-    return response.json();
   },
 };

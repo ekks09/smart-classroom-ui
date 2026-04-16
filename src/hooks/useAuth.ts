@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User } from '@/types';
+import { api } from '@/lib/api';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -7,29 +8,42 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('auth_token');
-    const storedUser = localStorage.getItem('user');
+    const storedToken = localStorage.getItem('sc_token');
 
-    if (storedToken && storedUser) {
+    if (storedToken) {
       setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      // Verify token and get user info
+      api.getCurrentUser(storedToken)
+        .then(userData => setUser(userData))
+        .catch(() => {
+          // Token invalid, clear it
+          localStorage.removeItem('sc_token');
+          setToken(null);
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
-
-    setLoading(false);
   }, []);
 
-  const login = (newToken: string, newUser: User) => {
-    setToken(newToken);
-    setUser(newUser);
-    localStorage.setItem('auth_token', newToken);
-    localStorage.setItem('user', JSON.stringify(newUser));
+  const login = async (username: string, password: string) => {
+    const response = await api.login(username, password);
+    setToken(response.token);
+    setUser(response.user);
+    localStorage.setItem('sc_token', response.token);
+  };
+
+  const register = async (username: string, password: string, email?: string, role: string = 'teacher') => {
+    const response = await api.register(username, password, email, role);
+    setToken(response.token);
+    setUser(response.user);
+    localStorage.setItem('sc_token', response.token);
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('sc_token');
   };
 
   return {
@@ -37,6 +51,7 @@ export const useAuth = () => {
     token,
     loading,
     login,
+    register,
     logout,
     isAuthenticated: !!token,
   };
