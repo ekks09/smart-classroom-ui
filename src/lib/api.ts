@@ -79,6 +79,28 @@ export const api = {
     }
   },
 
+  async requestPasswordReset(email: string): Promise<{ message: string }> {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/password-reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const error = await parseError(response);
+        throw new APIError(error, response.status);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Unable to submit password reset request');
+    }
+  },
+
   async getCurrentUser(token: string): Promise<User> {
     try {
       const response = await fetch(`${API_URL}/api/auth/me`, {
