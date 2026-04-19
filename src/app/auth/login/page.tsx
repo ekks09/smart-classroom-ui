@@ -6,6 +6,7 @@ import { AuthLayout } from '@/components/auth/AuthLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { config } from '@/lib/config';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -13,29 +14,50 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
+  const [redirected, setRedirected] = useState(false);
 
+  // Only redirect if we're already authenticated and haven't just logged in
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !redirected && !authLoading) {
+      setRedirected(true);
       router.push('/dashboard');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, authLoading, redirected, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
 
     try {
       await login(username, password);
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
-    } finally {
       setLoading(false);
+      // Don't navigate here - let the useEffect handle it
+      // This prevents race conditions
+    } catch (err: any) {
+      setLoading(false);
+      const errorMsg = err.message || 'Login failed. Please check your credentials.';
+      console.error('❌ Login error:', errorMsg);
+      setError(errorMsg);
     }
   };
+
+  // Show loading state while auth is initializing
+  if (authLoading) {
+    return (
+      <AuthLayout
+        title="Initializing..."
+        subtitle="Connecting to the Neural Network"
+        footer={<p className="text-xs text-electric-blue">System Status: Booting...</p>}
+      >
+        <div className="text-center">
+          <div className="animate-pulse text-neon-cyan">⚡ Establishing connection...</div>
+        </div>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout
@@ -46,7 +68,10 @@ export default function LoginPage() {
           <p>System Status: Online</p>
           <p>
             Demo teacher login:{' '}
-            <span className="font-semibold text-neon-cyan">teacher / password123</span>
+            <span className="font-semibold text-neon-cyan">{config.demo.username} / {config.demo.password}</span>
+          </p>
+          <p className="text-warning-purple">
+            ⚠️ Password is case-sensitive — copy the credentials exactly above.
           </p>
           <p>
             Need a new account?{' '}
@@ -69,8 +94,9 @@ export default function LoginPage() {
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            disabled={loading}
             required
-            className="w-full bg-transparent border-0 border-b-2 border-neon-cyan text-neon-cyan placeholder-neon-cyan/50 focus:ring-0 focus:border-neon-cyan"
+            className="w-full bg-transparent border-0 border-b-2 border-neon-cyan text-neon-cyan placeholder-neon-cyan/50 focus:ring-0 focus:border-neon-cyan disabled:opacity-50"
           />
         </div>
 
@@ -80,21 +106,29 @@ export default function LoginPage() {
             placeholder="Access Code"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
             required
-            className="w-full bg-transparent border-0 border-b-2 border-neon-cyan text-neon-cyan placeholder-neon-cyan/50 focus:ring-0 focus:border-neon-cyan"
+            className="w-full bg-transparent border-0 border-b-2 border-neon-cyan text-neon-cyan placeholder-neon-cyan/50 focus:ring-0 focus:border-neon-cyan disabled:opacity-50"
           />
         </div>
 
         {error && (
-          <p className="text-warning-purple text-sm text-center">{error}</p>
+          <div className="p-3 bg-warning-purple/20 border border-warning-purple rounded">
+            <p className="text-warning-purple text-sm">{error}</p>
+            {error.includes('Unable to connect') && (
+              <p className="text-warning-purple/80 text-xs mt-2">
+                💡 Tip: Make sure your backend is running and NEXT_PUBLIC_API_URL is set correctly
+              </p>
+            )}
+          </div>
         )}
 
         <Button
           type="submit"
-          className="w-full bg-neon-cyan hover:bg-neon-cyan/80 text-void-black font-bold py-3 rounded-lg"
-          disabled={loading}
+          className="w-full bg-neon-cyan hover:bg-neon-cyan/80 text-void-black font-bold py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={loading || authLoading}
         >
-          {loading ? 'Authenticating...' : 'Initialize Session'}
+          {loading ? '🔐 Authenticating...' : '⚡ Initialize Session'}
         </Button>
       </form>
     </AuthLayout>

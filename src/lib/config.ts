@@ -45,7 +45,7 @@ export const config = {
   // Demo Credentials (for development)
   demo: {
     username: 'teacher',
-    password: 'password123',
+    password: 'Password123',
   },
 
   // Student Registration (create new accounts)
