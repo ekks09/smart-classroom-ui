@@ -26,9 +26,11 @@ export const useHealth = (enabled: boolean = true) => {
     } catch (err: any) {
       setError(err.message || 'Health check failed');
       setHealth({
+        status: 'offline',
+        server: 'unknown',
         llm_ready: false,
-        vector_db: { connected: false },
         stt_ready: false,
+        vector_db: { connected: false, count: 0, embedding_dim: 0 },
       });
     } finally {
       setLoading(false);

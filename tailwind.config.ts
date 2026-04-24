@@ -13,6 +13,9 @@ const config: Config = {
         'neon-cyan': '#00f5d4',
         'electric-blue': '#00bbf9',
         'warning-purple': '#9b5de5',
+        'cyber-black': '#0a0a0a',
+        'cyber-cyan': '#00f5d4',
+        'cyber-blue': '#00bbf9',
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
@@ -32,11 +35,23 @@ const config: Config = {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' },
         },
+        spotlight: {
+          '0%': {
+            opacity: '0',
+            transform: 'translate(-72%, -62%) scale(0.5)',
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translate(-50%, -40%) scale(1)',
+          },
+        },
       },
       animation: {
         glow: 'glow 2s ease-in-out infinite',
         float: 'float 3s ease-in-out infinite',
         scan: 'scan 2s linear infinite',
+        spotlight: 'spotlight 2s ease .75s 1 forwards',
+        'fade-in': 'fadeIn 0.4s ease forwards',
       },
     },
   },

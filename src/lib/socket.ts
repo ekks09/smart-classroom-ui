@@ -9,7 +9,7 @@ let socket: Socket | null = null;
  * Get or create Socket.IO connection with automatic reconnection
  */
 export const getSocket = (token: string): Socket => {
-  if (!socket || !socket.connected) {
+  if (!socket) {
     console.log(`[Socket] Connecting to ${API_URL}`);
     
     socket = io(API_URL, {
@@ -27,6 +27,7 @@ export const getSocket = (token: string): Socket => {
     // Connection event handlers
     socket.on('connect', () => {
       console.log('[Socket] Connected');
+      socket?.emit('connected', { ts: Date.now() });
       socket?.emit('get_status');
     });
 
@@ -41,6 +42,12 @@ export const getSocket = (token: string): Socket => {
     socket.on('error', (error: any) => {
       console.error('[Socket] Error:', error);
     });
+  } else {
+    // Keep auth token fresh and reconnect if needed.
+    socket.auth = { token };
+    if (!socket.connected && socket.disconnected) {
+      socket.connect();
+    }
   }
 
   return socket;

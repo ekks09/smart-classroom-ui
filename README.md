@@ -9,6 +9,8 @@ A futuristic, cyberpunk-themed AI-powered classroom interface built with Next.js
 - **Real-time Audio**: Voice recognition and transcription
 - **3D Integration**: Spline 3D backgrounds
 - **Responsive Design**: Works on all devices
+- **Lecture Management**: Upload and manage course materials
+- **RAG-Powered Q&A**: Semantic search over lecture content
 
 ## 🛠 Tech Stack
 
@@ -26,28 +28,138 @@ A futuristic, cyberpunk-themed AI-powered classroom interface built with Next.js
 - npm or yarn
 - GitHub account
 - Vercel account
+- Backend API URL (from Colab/ngrok)
 
-## 🚀 Quick Start (Local Development)
+## 🚀 Deployment to Vercel
 
-1. **Clone the repository**:
+### 1. Backend Setup (Colab)
+1. Open the attached `ColabBackend.ipynb` in Google Colab
+2. Add your secrets:
+   - `SUPABASE_URL`
+   - `SUPABASE_KEY`
+   - `SUPABASE_SERVICE_KEY`
+   - `NGROK_AUTH_TOKEN`
+   - `JWT_SECRET`
+3. Run all cells to start the backend
+4. Note the ngrok public URL from the output
+
+### 2. Frontend Deployment
+1. **Fork/Clone this repository** to your GitHub
+
+2. **Deploy to Vercel**:
+   - Go to [vercel.com](https://vercel.com)
+   - Click "New Project"
+   - Import your GitHub repository
+   - Configure environment variables:
+     ```
+     NEXT_PUBLIC_API_URL=https://your-ngrok-url.ngrok-free.dev
+     ```
+   - Click "Deploy"
+
+3. **Update CORS in Backend** (if needed):
+   - In Colab, update the CORS origins to include your Vercel URL
+   - The backend already includes `https://smart-classroom-ui.vercel.app/`
+
+## 🔧 Local Development
+
+1. **Clone and install**:
    ```bash
-   git clone https://github.com/ekks09/smart-classroom-ui.git
-   cd smart-classroom-ui/smart-classroom-ai
-   ```
-
-2. **Install dependencies**:
-   ```bash
+   git clone <your-repo-url>
+   cd smart-classroom-ui
    npm install
    ```
 
-3. **Set up environment variables**:
+2. **Environment setup**:
    ```bash
    cp .env.example .env.local
    ```
    Edit `.env.local`:
    ```
-   NEXT_PUBLIC_API_URL=https://your-ngrok-url.ngrok-free.dev
+   NEXT_PUBLIC_API_URL=http://localhost:8000
    ```
+
+3. **Run development server**:
+   ```bash
+   npm run dev
+   ```
+
+4. **Open** [http://localhost:3000](http://localhost:3000)
+
+## 🎯 Usage
+
+1. **Login**: Use demo credentials `teacher` / `Password123`
+2. **Dashboard**: View system status and manage lectures
+3. **Upload Lectures**: Add course materials for AI processing
+4. **AI Chat**: Ask questions about uploaded content
+5. **Live Session**: Real-time audio transcription (teacher access)
+
+## 🔐 Authentication
+
+- **Demo Teacher**: `teacher` / `Password123`
+- **Backend**: JWT-based authentication
+- **Roles**: teacher, student, admin
+
+## 🌐 API Integration
+
+The frontend connects to a FastAPI backend with:
+- User authentication
+- Lecture management
+- AI chat (RAG-powered)
+- Real-time audio streaming
+- Vector database integration
+
+## 🎨 Customization
+
+### Colors
+Edit `tailwind.config.ts` to customize the cyberpunk theme:
+```typescript
+colors: {
+  'void-black': '#050505',
+  'neon-cyan': '#00f5d4',
+  'electric-blue': '#00bbf9',
+  'warning-purple': '#9b5de5',
+}
+```
+
+### Components
+UI components are in `src/components/`:
+- `ui/`: Base components (Button, Card, Input)
+- `scholar/`: AI-themed components
+- `layout/`: Layout components (Header, ContextDrawer)
+
+## 📝 Scripts
+
+- `npm run dev`: Start development server
+- `npm run build`: Build for production
+- `npm run start`: Start production server
+- `npm run lint`: Run ESLint
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Troubleshooting
+
+### Backend Connection Issues
+- Ensure `NEXT_PUBLIC_API_URL` is set correctly
+- Check if ngrok tunnel is active
+- Verify CORS settings in backend
+
+### Build Errors
+- Clear node_modules: `rm -rf node_modules && npm install`
+- Check TypeScript errors: `npm run build`
+
+### Socket.IO Issues
+- Ensure backend is running with Socket.IO enabled
+- Check firewall settings for WebSocket connections
 
 4. **Run the development server**:
    ```bash

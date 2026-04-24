@@ -11,6 +11,9 @@ export interface Lecture {
   course?: string;
   chunk_count?: number;
   created_at?: string;
+  uploaded_at?: string;
+  file_type?: string;
+  original_filename?: string;
 }
 
 export interface ChatMessage {
@@ -22,9 +25,11 @@ export interface ChatMessage {
 }
 
 export interface Source {
+  lecture_id: string;
   lecture_title: string;
   chunk_idx: number;
-  content?: string;
+  similarity: number;
+  preview: string;
 }
 
 export interface AuthResponse {
@@ -33,11 +38,15 @@ export interface AuthResponse {
 }
 
 export interface HealthStatus {
-  llm_ready: boolean;
+  status?: string;
+  server?: string;
+  llm_ready?: boolean;
+  stt_ready?: boolean;
   vector_db: {
     connected: boolean;
+    count?: number;
+    embedding_dim?: number;
   };
-  stt_ready: boolean;
 }
 
 export interface AskRequest {
@@ -48,7 +57,9 @@ export interface AskRequest {
 
 export interface AskResponse {
   answer: string;
-  sources?: Source[];
+  sources: Source[];
+  context_used: number;
+  retrieval_method: string;
 }
 
 export interface UploadLectureRequest {
@@ -61,5 +72,6 @@ export interface LiveSession {
   session_id: string;
   title: string;
   course: string;
-  started_by: string;
+  active?: boolean;
+  started_by?: string;
 }

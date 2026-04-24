@@ -33,6 +33,52 @@ const parseError = async (response: Response): Promise<string> => {
  * Main API client with integrated error handling and retry logic
  */
 export const api = {
+  async ask(question: string, token?: string | null): Promise<{ answer: any }> {
+    try {
+      const response = await fetch(`${API_URL}/ask`, {
+        method: 'POST',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question }),
+      });
+
+      if (!response.ok) {
+        const error = await parseError(response);
+        throw new APIError(error, response.status);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Failed to ask question');
+    }
+  },
+
+  async generateSemester(subject: string, weeks: number = 12, token?: string | null): Promise<any> {
+    try {
+      const response = await fetch(`${API_URL}/generate-semester`, {
+        method: 'POST',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ subject, weeks }),
+      });
+
+      if (!response.ok) {
+        const error = await parseError(response);
+        throw new APIError(error, response.status);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      throw new APIError('Failed to generate semester plan');
+    }
+  },
+
   async login(username: string, password: string): Promise<AuthResponse> {
     try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
@@ -200,22 +246,60 @@ export const api = {
 
   async askQuestion(token: string, request: AskRequest): Promise<AskResponse> {
     try {
-      const response = await fetch(`${API_URL}/api/assistant/ask`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(request),
-      });
+      // Preferred: new backend contract (/ask)
+      const tryNew = async () => {
+        const response = await fetch(`${API_URL}/ask`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ question: request.question }),
+        });
 
-      if (!response.ok) {
-        const error = await parseError(response);
-        throw new APIError(error, response.status);
+        if (!response.ok) {
+          const error = await parseError(response);
+          throw new APIError(error, response.status);
+        }
+
+        const data = await response.json();
+        const answer = data?.answer ?? data;
+        return {
+          answer: typeof answer === 'string' ? answer : JSON.stringify(answer),
+          sources: data?.sources || [],
+          context_used: data?.context_used || 0,
+          retrieval_method: data?.retrieval_method || 'rag',
+        } satisfies AskResponse;
+      };
+
+      // Fallback: legacy contract (/api/assistant/ask)
+      const tryLegacy = async () => {
+        const response = await fetch(`${API_URL}/api/assistant/ask`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(request),
+        });
+
+        if (!response.ok) {
+          const error = await parseError(response);
+          throw new APIError(error, response.status);
+        }
+
+        return (await response.json()) as AskResponse;
+      };
+
+      try {
+        return await tryNew();
+      } catch (error) {
+        // If the new endpoint doesn't exist, fall back to legacy.
+        if (error instanceof APIError && error.status === 404) {
+          return await tryLegacy();
+        }
+        throw error;
       }
-
-      const data = await response.json();
-      return data;
     } catch (error) {
       if (error instanceof APIError) throw error;
       throw new APIError('Failed to get response from AI assistant');
@@ -240,9 +324,9 @@ export const api = {
       if (error instanceof APIError) throw error;
       // Return default offline status instead of throwing
       return {
-        llm_ready: false,
-        vector_db: { connected: false },
-        stt_ready: false,
+        status: 'offline',
+        server: 'unknown',
+        vector_db: { connected: false, count: 0, embedding_dim: 0 },
       };
     }
   },
